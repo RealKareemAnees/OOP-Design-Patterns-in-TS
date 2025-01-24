@@ -1,14 +1,47 @@
 # Design Patterns in TypeScript
 
+this Document is based on courses/books/articls, and I see this is more than inough to learn _OOP design Patterns_
+
+> If you like this summary and are interested in more, you can follow me on [LinkedIn](https://www.linkedin.com/in/kareem-anees-0496b62b3) or [Facebook](https://www.facebook.com/TheyCallMeAbdo) or [My website](https://real-kareem.space) .
+
 ---
 
-## 1. **Creational Patterns**
+## Table of content
+
+- [Design Patterns in TypeScript](#design-patterns-in-typescript)
+  - [_Singleton_](#singleton)
+    - [Benefits of the Singleton Pattern](#benefits-of-the-singleton-pattern)
+    - [Common Uses of the Singleton Pattern](#common-uses-of-the-singleton-pattern)
+  - [_Factory Pattern_](#factory-pattern)
+    - [Example: Cats 🐈](#example-cats-🐈)
+  - [_Abstract Factory Pattern_](#abstract-factory-pattern)
+    - [Example](#example-1)
+  - [_Builder Pattern_](#builder-pattern)
+    - [Example: Himalayan Cat Builder](#example-himalayan-cat-builder)
+    - [Usage](#usage)
+    - [When to Use the Builder Pattern](#when-to-use-the-builder-pattern)
+  - [_Object Pool Pattern_](#object-pool-pattern)
+    - [Example: Cat Object Pool](#example-cat-object-pool)
+    - [Common Uses of Object Pools](#common-uses-of-object-pools)
+  - [_Dependency Injection (DI)_](#dependency-injection-di)
+    - [Example: IOC Container](#example-ioc-container)
+    - [Advantages of Dependency Injection](#advantages-of-dependency-injection)
+  - [Decorator Pattern](#decorator-pattern)
+    - [Use Case: Retry Logic with Decorators](#use-case-retry-logic-with-decorators)
+    - [Use Case: Input Validation with Decorators](#use-case-input-validation-with-decorators)
+  - [Adapter Pattern](#adapter-pattern)
+  - [Facade Pattern](#facade-pattern)
+  - [Proxy Pattern](#proxy-pattern)
+  - [Chain of Responsibility](#chain-of-responsibility)
+  - [Iterator Pattern](#iterator-pattern)
+  - [Observer Pattern](#observer-pattern)
+- [The End](#the-end)
 
 ---
 
-### [_Singleton_]()
+## [_Singleton_]()
 
-this pattern makes us ensure that only one instance of a class is available
+The Singleton pattern ensures that only one instance of a class is created throughout the application.
 
 ```ts
 class Singleton {
@@ -17,104 +50,94 @@ class Singleton {
   constructor() {
     if (Singleton.instance) {
       return Singleton.instance;
-    } else {
-      Singleton.instance = this;
-
-      // Initialize the instance normally
     }
+    Singleton.instance = this;
+
+    // Initialize the instance normally
   }
+
   public static getInstance(): Singleton {
     return Singleton.instance;
   }
 }
 ```
 
-this way only one instance of the class is initialized
+This approach guarantees that only a single instance of the class is initialized.
 
-**benifets of doing so**
+### **Benefits of the Singleton Pattern**
 
-- statefullness
-- only-once initialisation
+- **Statefulness**: A single instance holds shared state across the system.
+- **One-time Initialization**: Ensures resources are initialized only once.
 
-<br>
+### **Common Uses of the Singleton Pattern**
 
-> **Uses of Singleton pattern**
->
-> 1. Configuration Management
-> 2. Logging
-> 3. Database Connection
-> 4. Thread Pool Management
-> 5. Caching
-> 6. Service Locators
-> 7. Multithreading Control
->
-> **Typically any state-holding entity or a centralized service**
+1. Configuration Management
+2. Logging
+3. Database Connections
+4. Thread Pool Management
+5. Caching
+6. Service Locators
+7. Multithreading Control
 
-### [Factory]()
+> **In general:** Use the Singleton pattern for centralized, state-holding entities or services.
 
-a _factory_ generates objects instead of the user
+---
+
+## [_Factory Pattern_]()
+
+The Factory pattern creates objects without exposing the instantiation logic to the client. It lets you define interfaces for the types of objects being created.
+
+### Example with Cats 🐈
 
 ```ts
-// interfaces
-interface HimalayanCatInterface {
+// Define interfaces
+interface HimalayanCat {
   color: string;
   fur: string;
   size: string;
 }
 
-interface PersianCatInterface {
+interface PersianCat {
   color: string;
   fur: string;
   size: string;
 }
 ```
 
-a good practice is to define interfaces, the **Users** care aboun interfaces, class proto doen't represent an interface from a design prospective
-
-> I we defined a class instead of the intrface of the presian cat for example, we will face isssues witth other breeds using that class
+> **Why interfaces matter:** Users focus on **interfaces**, not the class structure. Using classes directly might cause issues when adding new types.
 
 ```ts
-// factory
+// Factory class
 class CatsFactory {
-  public static createHimalayanCat(): HimalayanCatInterface {
-    return {
-      color: "white",
-      fur: "long",
-      size: "large",
-    };
+  public static createHimalayanCat(): HimalayanCat {
+    return { color: "white", fur: "long", size: "large" };
   }
 
-  public static createPersianCat(): PersianCatInterface {
-    return {
-      color: "black",
-      fur: "short",
-      size: "small",
-    };
+  public static createPersianCat(): PersianCat {
+    return { color: "black", fur: "short", size: "small" };
   }
 }
 ```
 
-this pattern make the system loosely coupled
+**Advantages**:
 
-### [abstract factory]()
+- Promotes **loose coupling** by decoupling the creation logic from the usage.
 
-**instead of making the users expect cerain interface, we can give them what they need**
+---
+
+## [_Abstract Factory Pattern_]()
+
+The Abstract Factory pattern provides an interface to create families of related or dependent objects without specifying their concrete classes.
+
+### Example
 
 ```ts
 class CatFactory {
-  static createCat(type: string): HimalayanCatInterface | PersianCatInterface {
+  static createCat(type: string): HimalayanCat | PersianCat {
     if (type === "Himalayan") {
-      return {
-        color: "white",
-        fur: "long",
-        size: "large",
-      };
+      return { color: "white", fur: "long", size: "large" };
     } else if (type === "Persian") {
-      return {
-        color: "black",
-        fur: "short",
-        size: "small",
-      };
+      return { color: "black", fur: "short", size: "small" };
     } else {
       throw new Error("Invalid cat type");
     }
@@ -122,11 +145,18 @@ class CatFactory {
 }
 ```
 
-### [Builder pattern]()
+**Why use it?**  
+Instead of forcing users to know the exact implementation details (e.g., specific interfaces), you provide them with what they need dynamically.
+
+---
+
+## [_Builder Pattern_]()
+
+The Builder pattern simplifies the creation of complex objects by constructing them step-by-step.
+
+### Example: Himalayan Cat Builder
 
 ```ts
-// builder pattern
-
 class HimalayanCatBuilder {
   private color: string;
   private fur: string;
@@ -147,19 +177,15 @@ class HimalayanCatBuilder {
     return this;
   }
 
-  build(): HimalayanCatInterface {
-    return {
-      color: this.color,
-      fur: this.fur,
-      size: this.size,
-    };
+  build(): HimalayanCat {
+    return { color: this.color, fur: this.fur, size: this.size };
   }
 }
 ```
 
-```ts
-//usage
+### Usage
 
+```ts
 const himalayanCat = new HimalayanCatBuilder()
   .setColor("white")
   .setFur("long")
@@ -167,16 +193,20 @@ const himalayanCat = new HimalayanCatBuilder()
   .build();
 ```
 
-**I think that this pattern is only useful in only two cases**
+### **When to Use the Builder Pattern**
 
-- the object is very complex
-- or the system needs to build this object on multiple stages like in [_Function currying in FP_](https://github.com/RealKareemAnees/GoFunctionalProgramming#function-currying)
+1. When the object is **complex** and requires multiple parameters.
+2. When the object must be **constructed in multiple stages**, such as in [_Function Currying_](https://github.com/RealKareemAnees/GoFunctionalProgramming#function-currying).
 
-### [object pool]()
+---
+
+## [_Object Pool Pattern_]()
+
+The Object Pool pattern is used to manage reusable objects, especially when object creation is expensive.
+
+### Example: Cat Object Pool
 
 ```ts
-// object pool
-
 class Cat {
   public name: string;
   constructor(name: string) {
@@ -201,40 +231,38 @@ class CatsObjectPool {
 
   public loadCatsPool() {
     for (let i = 0; i < this.poolSize; i++) {
-      this._cats.push(new Cat("cat" + i));
+      this._cats.push(new Cat("Cat" + i));
     }
   }
 
-  public getCat() {
+  public getCat(): Cat | null {
     if (this._cats.length === 0) {
       console.log("No cats available");
       return null;
     }
-    return this._cats.pop(); // get the last cat
+    return this._cats.pop();
   }
 }
 ```
 
-creates set of usable objects on the fly
+**Key Idea**: Create a set of reusable objects instead of instantiating them repeatedly.
 
-<br>
+### **Common Uses of Object Pools**
 
-> **Uses of Object Pool**
->
-> 1. Thread Pooling
-> 2. Memory-Intensive Object Management
->
-> **Typicaly when we need to retrieve a DS on the fly**
+1. Thread Pooling
+2. Memory-Intensive Object Management
 
-## Dependency injection
+> **When to use**: Whenever objects are expensive to create or destroy, and you need to retrieve them dynamically.
 
-I made this in separate section
+---
 
-**The whole Idea of DI is to make users use interfsces of its issosiations instead of the concrete implementation**
+## [_Dependency Injection (DI)_]()
+
+Dependency Injection (DI) is a design pattern that removes hard-coded dependencies, allowing code to depend on **abstractions (interfaces)** rather than concrete implementations.
+
+### Example: IOC Container
 
 ```ts
-// ioc-container
-
 class IOCContainer {
   private _services: { [key: string]: any } = {};
 
@@ -253,7 +281,7 @@ class IOCContainer {
   }
 }
 
-// usage
+// Usage
 
 class A {
   constructor() {
@@ -271,7 +299,7 @@ class B {
   }
 
   doSomething() {
-    a.doSomething();
+    this.a.doSomething();
   }
 }
 
@@ -287,15 +315,17 @@ a.doSomething();
 b.doSomething();
 ```
 
-in the previous code neither A nor B know about each other, we can user interfaces for further abstraction instead of using the class as a reference to methods
+### **Advantages of DI**
+
+- Promotes **modularity** by decoupling dependencies.
+- Enables easier **testing** by substituting implementations.
+- Makes code more **flexible** and **extensible**.
 
 ---
 
-## Structural Design Pattern
+## [Decorator Pattern]()
 
-### Decorator
-
-decorator is the exact implementation on _Polymorphism_ where we extend a class and alter methods like this code
+The **Decorator Pattern** is a structural design pattern that implements **polymorphism** by extending a class and altering its behavior dynamically. Here's an example:
 
 ```ts
 // Base Component
@@ -344,9 +374,9 @@ const smsNotifier = new SMSNotifier(emailNotifier);
 smsNotifier.send("Hello, world!");
 ```
 
-<br>
+### Use Case: Retry Logic with Decorators
 
-a common use case which I use alot is retry logic
+The decorator pattern can be extended to include **retry logic** using decorators in TypeScript 5:
 
 ```ts
 function retry(times: number) {
@@ -371,12 +401,8 @@ function retry(times: number) {
     };
   };
 }
-```
 
-this code uses decorator pattern and decorators in ts5
-
-```ts
-// usage
+// Usage
 class S {
   @retry(3)
   print() {
@@ -389,30 +415,18 @@ const s = new S();
 s.print();
 ```
 
-output should be like
+**Expected Output**:
 
-```cmd
+```plaintext
 Hello World
 Hello World
 Hello World
-23 |
-24 | class S {
-25 |   @retry(3)
-26 |   print() {
-27 |     console.log("Hello World");
-28 |     throw new Error("Error");
-               ^
-error: Error
-      at print (/home/kareem/Desktop/Coding/OOP-Design-Patterns-in-TS/S.ts:28:11)
-      at <anonymous> (/home/kareem/Desktop/Coding/OOP-Design-Patterns-in-TS/S.ts:12:33)
-      at /home/kareem/Desktop/Coding/OOP-Design-Patterns-in-TS/S.ts:33:3
-
-Bun v1.1.43 (Linux x64)
+Error: Error
 ```
 
-<br>
+### Use Case: Input Validation with Decorators
 
-also in validation of inputs
+Another common use case is **validating method inputs**:
 
 ```ts
 function validateInput(validator: (args: any[]) => boolean) {
@@ -431,7 +445,7 @@ function validateInput(validator: (args: any[]) => boolean) {
   };
 }
 
-// usage
+// Usage
 class S {
   @validateInput((args) => args[0] === "hi")
   public static print(input: any) {
@@ -439,15 +453,17 @@ class S {
   }
 }
 
-S.print("hi"); // hi
-S.print("hello"); // Error: Invalid input
+S.print("hi"); // Outputs: hi
+S.print("hello"); // Throws: Error: Invalid input
 ```
 
-### Adapter Pattern
+---
 
-our user expects an interface, so instead of editing an existing interface, we can just use another class in the middle to adapt the user inputs to the class inputs
+## [Adapter Pattern]()
 
-> adapter is usen when the diffirence in interface is not huge, otherwise it will be a _proxy_
+The **Adapter Pattern** bridges the gap between an expected interface and an existing class. Instead of modifying the existing class, an adapter wraps it to provide compatibility.
+
+> **When to Use:** When there is a slight difference between interfaces. For major interface mismatches, consider using a **proxy**.
 
 ```ts
 // Old System (LegacyPrinter)
@@ -487,9 +503,11 @@ const adaptedPrinter = new PrinterAdapter(legacyPrinter); // Adapter
 adaptedPrinter.print("Hello from the Adapter!");
 ```
 
-### facade
+---
 
-The Facade Pattern is a structural design pattern that provides a simplified interface to a complex subsystem
+## [Facade Pattern]()
+
+The **Facade Pattern** provides a simplified interface to a complex subsystem.
 
 ```ts
 // Subsystems
@@ -557,9 +575,11 @@ homeTheater.watchMovie("Inception");
 homeTheater.endMovie();
 ```
 
-### proxy
+---
 
-The Proxy Pattern is another structural design pattern that provides an object representing another object. The proxy acts as an intermediary and can control access to the real object, usually for purposes like lazy initialization, access control, logging, or additional functionality.
+## [Proxy Pattern]()
+
+The **Proxy Pattern** acts as an intermediary for another object, controlling access or adding functionality. It's commonly used for **lazy initialization**, **access control**, **logging**, or **caching**.
 
 ```ts
 // Subject
@@ -612,81 +632,13 @@ image1.display(); // Displays photo1 without loading it again
 image2.display(); // Loads and displays photo2
 ```
 
-## Behavioral Patterns
+---
 
-### strategy
+## [Chain of Responsibility]()
 
-it is passing of the implementation as an argument rather than attaching it
+The **Chain of Responsibility** pattern creates a chain of objects that handle a request sequentially, passing it along the chain if the current object doesn't handle it.
 
-```ts
-// Strategy Interface
-interface SortStrategy {
-  sort(arr: number[]): number[];
-}
-
-// Concrete Strategy A: Bubble Sort
-class BubbleSort implements SortStrategy {
-  sort(arr: number[]): number[] {
-    console.log("Using Bubble Sort");
-    let n = arr.length;
-    for (let i = 0; i < n - 1; i++) {
-      for (let j = 0; j < n - i - 1; j++) {
-        if (arr[j] > arr[j + 1]) {
-          // Swap
-          [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
-        }
-      }
-    }
-    return arr;
-  }
-}
-
-// Concrete Strategy B: Quick Sort
-class QuickSort implements SortStrategy {
-  sort(arr: number[]): number[] {
-    console.log("Using Quick Sort");
-    if (arr.length <= 1) return arr;
-    let pivot = arr[0];
-    let left = arr.slice(1).filter((x) => x < pivot);
-    let right = arr.slice(1).filter((x) => x >= pivot);
-    return [...this.sort(left), pivot, ...this.sort(right)];
-  }
-}
-
-// Context: SortingContext
-class SortingContext {
-  private strategy: SortStrategy;
-
-  constructor(strategy: SortStrategy) {
-    this.strategy = strategy;
-  }
-
-  setStrategy(strategy: SortStrategy) {
-    this.strategy = strategy;
-  }
-
-  executeSort(arr: number[]): number[] {
-    return this.strategy.sort(arr);
-  }
-}
-
-// Usage
-const numbers = [5, 3, 8, 4, 2];
-
-// Use Bubble Sort
-const context = new SortingContext(new BubbleSort());
-console.log(context.executeSort([...numbers])); // Output: Bubble Sort and sorted numbers
-
-// Switch to Quick Sort
-context.setStrategy(new QuickSort());
-console.log(context.executeSort([...numbers])); // Output: Quick Sort and sorted numbers
-```
-
-### chain of risponsibility
-
-it is the same concept of _monads_ in FP except it is OOp
-
-like
+It’s similar to **monads** in functional programming or **middleware** in web development frameworks like Express.js.
 
 ```ts
 // Handler Interface
@@ -758,62 +710,27 @@ const errorLogger = new ErrorLogger();
 infoLogger.setNext(debugLogger).setNext(errorLogger);
 
 // Test: Log messages with different levels
-infoLogger.log("INFO", "This is an info message.");
-infoLogger.log("DEBUG", "This is a debug message.");
-infoLogger.log("ERROR", "This is an error message.");
-infoLogger.log("WARNING", "This is a warning message.");
+infoLogger.log("INFO", "This is an info message."); // Info Logger handles this
+infoLogger.log("DEBUG", "This is a debug message."); // Debug Logger handles this
+infoLogger.log("ERROR", "This is an error message."); // Error Logger handles this
+infoLogger.log("WARNING", "This is a warning message."); // Unhandled
 ```
 
-or like middleware
+> **When to use:**
+>
+> - Flexible and dynamic request handling, such as logging systems, customer support ticketing systems, or form validation pipelines.
+> - Simplifying conditional logic by delegating responsibility to handlers.
 
-```ts
-import express from "express";
+> **Key Benefits:**
+>
+> - Decouples the sender of a request from its receivers.
+> - Allows new handlers to be added without modifying existing code.
 
-const app = express();
+---
 
-// Middleware 1: Logging
-function logRequest(
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction
-) {
-  console.log(`Received request: ${req.method} ${req.url}`);
-  next(); // Passes the request to the next middleware
-}
+## [Iterator Pattern]()
 
-// Middleware 2: Authentication check
-function authenticate(
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction
-) {
-  if (req.headers["auth-token"]) {
-    console.log("User authenticated");
-    next(); // Passes the request to the next middleware
-  } else {
-    res.status(403).send("Forbidden");
-  }
-}
-
-// Middleware 3: Final request handler
-function handleRequest(req: express.Request, res: express.Response) {
-  res.send("Request processed successfully");
-}
-
-// Chain of Middleware
-app.use(logRequest);
-app.use(authenticate);
-app.use(handleRequest);
-
-// Start the server
-app.listen(3000, () => {
-  console.log("Server is running on port 3000");
-});
-```
-
-### itirator
-
-the itirator class is used to itirate over set of entities, like a loop but in statefull manner, this can be usefull in a checklist for example where you want to stop and continue based on factors
+The **Iterator Pattern** provides a way to sequentially access elements in a collection without exposing its underlying representation. It's useful in stateful situations like checklists or managing large datasets.
 
 ```ts
 // Iterator Interface
@@ -870,9 +787,21 @@ while (iterator.hasNext()) {
 }
 ```
 
-### observer
+> **When to use:**
+>
+> - Custom traversal logic for collections like trees, graphs, or lists.
+> - Allowing multiple ways to traverse a collection (e.g., depth-first vs. breadth-first search).
 
-The Observer Pattern is a behavioral design pattern that defines a one-to-many dependency between objects, where a change in the state of one object (called the subject) is automatically notified to all dependent objects (called observers)
+> **Key Benefits:**
+>
+> - Adheres to the **Single Responsibility Principle** by separating traversal logic from collection logic.
+> - Provides a consistent interface for traversing collections.
+
+---
+
+## [Observer Pattern]()
+
+The **Observer Pattern** establishes a one-to-many relationship where multiple observers automatically get updated when the subject’s state changes.
 
 ```ts
 // Observer Interface
@@ -968,3 +897,20 @@ weatherStation.registerObserver(forecastDisplay);
 weatherStation.setMeasurements(25, 60, 1013); // Output: Current conditions: 25°C and 60% humidity, Forecast: Pressure is 1013 hPa
 weatherStation.setMeasurements(30, 65, 1012); // Output: Current conditions: 30°C and 65% humidity, Forecast: Pressure is 1012 hPa
 ```
+
+> **When to use:**
+>
+> - Event-driven systems, such as GUIs or real-time data updates.
+> - When multiple parts of a system need to react to state changes in a centralized object.
+
+> **Key Benefits:**
+>
+> - Promotes loose coupling between the subject and observers.
+> - Dynamically adds or removes observers without modifying the subject.
+
+> **Common Pitfalls:**
+>
+> - Ensure observers properly unregister to avoid memory leaks.
+> - Be cautious of notification delays when dealing with large numbers of observers.
+
+# The end
